@@ -77,12 +77,12 @@ src/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/quiz-app-backend.git
+   git clone https://github.com/amitkumar9297/quiz_backend.git
    ```
 
 2. Navigate to the project directory:
    ```bash
-   cd quiz-app-backend
+   cd quiz_backend
    ```
 
 3. Install dependencies:
@@ -92,7 +92,7 @@ src/
 
 4. Create a `.env` file for environment variables:
    ```plaintext
-   PORT=3000
+   PORT=5000
    DATABASE_URL=mongodb://localhost:27017/quizApp
    JWT_SECRET=your_jwt_secret
    RATE_LIMIT_WINDOW=15 * 60 * 1000
@@ -101,54 +101,11 @@ src/
 
 5. Start the development server:
    ```bash
-   npm run dev
+   npm run local
    ```
 
 ---
 
-## API Endpoints
-
-### Authentication
-- **POST /api/auth/register**: User registration.
-- **POST /api/auth/login**: User login.
-
-### Quiz Management (Admin)
-- **POST /api/admin/quizzes**: Create a quiz.
-- **GET /api/admin/quizzes**: Get all quizzes.
-- **PUT /api/admin/quizzes/:id**: Update a quiz.
-- **DELETE /api/admin/quizzes/:id**: Delete a quiz.
-
-### Quiz Attempt
-- **POST /api/quizzes/:id/attempt**: Submit quiz answers.
-- **GET /api/quizzes/:id/result**: View quiz results.
-
-### Notifications
-- **GET /api/notifications**: Get user notifications.
-
----
-
-## Scripts
-- **`npm run dev`**: Start the development server.
-- **`npm run build`**: Build the TypeScript files.
-- **`npm start`**: Start the production server.
-
----
-
-## Contributing
-1. Fork the repository.
-2. Create a new branch:
-   ```bash
-   git checkout -b feature-name
-   ```
-3. Make your changes and commit:
-   ```bash
-   git commit -m "Add feature-name"
-   ```
-4. Push to the branch:
-   ```bash
-   git push origin feature-name
-   ```
-5. Open a pull request.
 
 ---
 
