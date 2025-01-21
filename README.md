@@ -151,3 +151,10 @@ src/
 5. Open a pull request.
 
 ---
+
+## DFD Image
+![DFD](https://github.com/user-attachments/assets/62e4fc99-1dac-46e7-a76c-7b6b6787f87f)
+
+## Flow Chart
+
+![dataFlowChart](https://github.com/user-attachments/assets/95759e7f-5fc8-4d90-8147-a8ca1b97c554)
