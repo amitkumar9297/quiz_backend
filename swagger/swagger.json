@@ -2,8 +2,8 @@
   "swagger": "2.0",
   "info": {
     "version": "1.0.0",
-    "title": "Express Project API",
-    "description": "API documentation for Express project",
+    "title": "Quiz App API",
+    "description": "API documentation for the Quiz App",
     "contact": {
       "name": "API Support",
       "email": "support@example.com"
@@ -12,302 +12,1357 @@
   "host": "localhost:5000",
   "basePath": "/api",
   "tags": [
+    { "name": "users", "description": "User management APIs" },
+    { "name": "questions", "description": "Question management APIs" },
+    { "name": "quizzes", "description": "Quiz management APIs" },
+    { "name": "QuizAttempts", "description": "Quiz attempt APIs" },
+    { "name": "Results", "description": "Result and leaderboard APIs" },
     {
-      "name": "Quizzes",
-      "description": "Quiz management APIs"
+      "name": "Notifications",
+      "description": "Operations related to user notifications."
+    },
+    {
+      "name": "Admin",
+      "description": "Operations related to admin management."
     }
   ],
-  "schemes": [
-    "http"
-  ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "schemes": ["http"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
-    "/": {
+   "/users/": {
       "post": {
-        "description": "",
+        "tags": ["users"],
+        "summary": "Create a User",
+        "description": "Endpoint to create a new user.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUser"
+            }
+          }
+        ],
         "responses": {
-          "0": {
-            "description": ""
+          "201": {
+            "description": "User created successfully."
           },
-          "1": {
-            "description": ""
+          "400": {
+            "description": "Validation error."
           },
-          "3": {
-            "description": ""
-          },
-          "4": {
-            "description": ""
-          },
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "default": {
-            "description": ""
+          "500": {
+            "description": "Internal server error."
           }
         }
       },
       "get": {
-        "description": "",
+        "tags": ["users"],
+        "summary": "Get All Users",
+        "description": "Retrieve all users. Admin access required.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "type": "string",
+            "required": true,
+            "description": "Bearer token for authentication"
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "List of users retrieved successfully."
+          },
+          "403": {
+            "description": "Access forbidden. Admin access required."
+          },
+          "500": {
+            "description": "Internal server error."
           }
         }
       }
     },
-    "/login": {
+    "/users/login": {
       "post": {
-        "description": "",
+        "tags": ["users"],
+        "summary": "User Login",
+        "description": "Authenticate a user and return an access token.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginUser"
+            }
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Login successful. Access token returned."
+          },
+          "400": {
+            "description": "Validation error."
+          },
+          "401": {
+            "description": "Authentication failed."
           }
         }
       }
     },
-    "/{id}": {
+    "/users/{id}": {
       "get": {
-        "description": "",
+        "tags": ["users"],
+        "summary": "Get User by ID",
+        "description": "Retrieve details of a user by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "User ID"
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "User details retrieved successfully."
+          },
+          "404": {
+            "description": "User not found."
+          },
+          "500": {
+            "description": "Internal server error."
           }
         }
       },
       "put": {
-        "description": "",
+        "tags": ["users"],
+        "summary": "Update User",
+        "description": "Update a user's details. User access required.",
         "parameters": [
           {
-            "name": "id",
             "in": "path",
+            "name": "id",
+            "type": "string",
             "required": true,
-            "type": "string"
+            "description": "User ID"
           },
           {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateUser"
+            }
           }
         ],
         "responses": {
-          "0": {
-            "description": ""
-          },
-          "1": {
-            "description": ""
-          },
-          "3": {
-            "description": ""
-          },
-          "4": {
-            "description": ""
-          },
           "200": {
-            "description": "OK"
+            "description": "User updated successfully."
           },
-          "401": {
-            "description": "Unauthorized"
+          "400": {
+            "description": "Validation error."
           },
           "403": {
-            "description": "Forbidden"
+            "description": "Access forbidden."
           },
           "404": {
-            "description": "Not Found"
+            "description": "User not found."
+          },
+          "500": {
+            "description": "Internal server error."
           }
         }
       },
       "delete": {
-        "description": "",
+        "tags": ["users"],
+        "summary": "Delete User",
+        "description": "Delete a user by their ID. User access required.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "User ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully."
+          },
+          "403": {
+            "description": "Access forbidden."
+          },
+          "404": {
+            "description": "User not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/users/refresh-token": {
+      "post": {
+        "tags": ["users"],
+        "summary": "Refresh Access Token",
+        "description": "Refresh the user's access token.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Access token refreshed successfully."
+          },
+          "401": {
+            "description": "Authentication failed."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+
+    "/quizzes/": {
+      "post": {
+        "tags": ["quizzes"],
+        "summary": "Create a Quiz",
+        "description": "Endpoint to create a new quiz. Admin access required.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateQuiz"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Quiz created successfully."
+          },
+          "400": {
+            "description": "Validation error."
+          },
+          "403": {
+            "description": "Access forbidden. Admin access required."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      },
+      "get": {
+        "tags": ["quizzes"],
+        "summary": "Get All Quizzes",
+        "description": "Retrieve a list of all quizzes.",
+        "responses": {
+          "200": {
+            "description": "List of quizzes retrieved successfully."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/quizzes/{id}": {
+      "get": {
+        "tags": ["quizzes"],
+        "summary": "Get Quiz by ID",
+        "description": "Retrieve a specific quiz by its ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the quiz"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quiz retrieved successfully."
+          },
+          "404": {
+            "description": "Quiz not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      },
+      "put": {
+        "tags": ["quizzes"],
+        "summary": "Update a Quiz",
+        "description": "Update a specific quiz. Admin access required.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the quiz"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateQuiz"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quiz updated successfully."
+          },
+          "400": {
+            "description": "Validation error."
+          },
+          "403": {
+            "description": "Access forbidden. Admin access required."
+          },
+          "404": {
+            "description": "Quiz not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      },
+      "delete": {
+        "tags": ["quizzes"],
+        "summary": "Delete a Quiz",
+        "description": "Delete a specific quiz. Admin access required.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the quiz"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quiz deleted successfully."
+          },
+          "403": {
+            "description": "Access forbidden. Admin access required."
+          },
+          "404": {
+            "description": "Quiz not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+
+     "/questions/": {
+      "post": {
+        "tags": ["questions"],
+        "summary": "Create a Question",
+        "description": "Endpoint to create a new question. Admin access required.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateQuestion"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Question created successfully."
+          },
+          "400": {
+            "description": "Validation error."
+          },
+          "403": {
+            "description": "Access forbidden. Admin access required."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/questions/quiz/{quizId}": {
+      "get": {
+        "tags": ["questions"],
+        "summary": "Get Questions by Quiz ID",
+        "description": "Retrieve all questions for a specific quiz.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "quizId",
+            "type": "string",
+            "required": true,
+            "description": "ID of the quiz"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of questions retrieved successfully."
+          },
+          "404": {
+            "description": "Quiz not found or no questions available."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/questions/{id}": {
+      "get": {
+        "tags": ["questions"],
+        "summary": "Get Question by ID",
+        "description": "Retrieve a specific question by its ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the question"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Question retrieved successfully."
+          },
+          "404": {
+            "description": "Question not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      },
+      "put": {
+        "tags": ["questions"],
+        "summary": "Update a Question",
+        "description": "Update a specific question. Admin access required.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the question"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateQuestion"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Question updated successfully."
+          },
+          "400": {
+            "description": "Validation error."
+          },
+          "403": {
+            "description": "Access forbidden. Admin access required."
+          },
+          "404": {
+            "description": "Question not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      },
+      "delete": {
+        "tags": ["questions"],
+        "summary": "Delete a Question",
+        "description": "Delete a specific question. Admin access required.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "ID of the question"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Question deleted successfully."
+          },
+          "403": {
+            "description": "Access forbidden. Admin access required."
+          },
+          "404": {
+            "description": "Question not found."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+
+
+
+    "/quiz-attempts": {
+      "post": {
+        "tags": ["QuizAttempts"],
+        "summary": "Create a new quiz attempt",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/QuizAttemptCreation"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Quiz attempt created successfully.",
+            "schema": {
+              "$ref": "#/definitions/QuizAttempt"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/quiz-attempts/submit": {
+      "post": {
+        "tags": ["QuizAttempts"],
+        "summary": "Submit a quiz attempt",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/QuizAttemptSubmission"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quiz attempt submitted successfully.",
+            "schema": {
+              "$ref": "#/definitions/QuizAttempt"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+
+
+
+    "/results": {
+      "post": {
+        "tags": ["Results"],
+        "summary": "Create a new result",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ResultCreation"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Result created successfully.",
+            "schema": {
+              "$ref": "#/definitions/Result"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/results/user/{userId}": {
+      "get": {
+        "tags": ["Results"],
+        "summary": "Get results by user ID",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "objectId",
+            "description": "ID of the user."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Results retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Result"
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/results/leaderboard/{quizId}": {
+      "get": {
+        "tags": ["Results"],
+        "summary": "Get leaderboard for a specific quiz",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "quizId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "objectId",
+            "description": "ID of the quiz."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leaderboard retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LeaderboardEntry"
+              }
+            }
+          },
+          "404": {
+            "description": "Quiz not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "post": {
+        "tags": ["Notifications"],
+        "summary": "Create a new notification",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NotificationCreation"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Notification created successfully.",
+            "schema": {
+              "$ref": "#/definitions/Notification"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/notifications/user/{userId}": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get notifications by user ID",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "objectId",
+            "description": "ID of the user."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notifications retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Notification"
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/notifications/{id}/read": {
+      "put": {
+        "tags": ["Notifications"],
+        "summary": "Mark a notification as read",
+        "produces": ["application/json"],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
+            "type": "string",
+            "format": "objectId",
+            "description": "ID of the notification."
           }
         ],
         "responses": {
-          "0": {
-            "description": ""
-          },
-          "1": {
-            "description": ""
-          },
-          "3": {
-            "description": ""
-          },
-          "4": {
-            "description": ""
-          },
           "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "Notification marked as read successfully.",
+            "schema": {
+              "$ref": "#/definitions/Notification"
+            }
           },
           "404": {
-            "description": "Not Found"
-          },
-          "default": {
-            "description": ""
+            "description": "Notification not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
     },
-    "/refresh-token": {
-      "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/quiz/{quizId}": {
+    "/admin/users": {
       "get": {
-        "description": "",
+        "tags": ["Admin"],
+        "summary": "Get all users",
+        "produces": ["application/json"],
         "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/submit": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "0": {
-            "description": ""
-          },
-          "1": {
-            "description": ""
-          },
-          "3": {
-            "description": ""
-          },
-          "4": {
-            "description": ""
-          },
           "200": {
-            "description": "OK"
+            "description": "List of users retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/quizzes": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get all quizzes",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "List of quizzes retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Quiz"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/questions": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get all questions",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "List of questions retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Question"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/quiz-attempts": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get all quiz attempts",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "List of quiz attempts retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/QuizAttempt"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/results": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get all results",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "List of results retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Result"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+   "CreateUser": {
+      "type": "object",
+      "required": ["name", "email", "password"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "John Doe"
+        },
+        "email": {
+          "type": "string",
+          "example": "johndoe@example.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["USER", "ADMIN"],
+          "example": "USER"
+        },
+        "active": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "LoginUser": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "johndoe@example.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        }
+      }
+    },
+    "UpdateUser": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "John Doe Updated"
+        },
+        "email": {
+          "type": "string",
+          "example": "johnupdated@example.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "newpassword123"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["USER", "ADMIN"],
+          "example": "USER"
+        },
+        "active": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "CreateQuiz": {
+      "type": "object",
+      "required": ["title", "description", "duration", "createdBy"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "example": "General Knowledge Quiz"
+        },
+        "description": {
+          "type": "string",
+          "example": "A quiz to test your general knowledge."
+        },
+        "duration": {
+          "type": "number",
+          "example": 30
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "string"
           },
-          "401": {
-            "description": "Unauthorized"
+          "example": ["63e9a3b9c9d3c2b1a1a1a1a1", "63e9a3b9c9d3c2b1a1a1a2a2"]
+        },
+        "createdBy": {
+          "type": "string",
+          "example": "63e9a3b9c9d3c2b1a1a1a1a1"
+        },
+        "isActive": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "UpdateQuiz": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "example": "Updated Quiz Title"
+        },
+        "description": {
+          "type": "string",
+          "example": "An updated description for the quiz."
+        },
+        "duration": {
+          "type": "number",
+          "example": 45
+        },
+        "isActive": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+
+
+   "CreateQuestion": {
+      "type": "object",
+      "required": ["quizId", "questionText", "options", "correctAnswer", "questionType"],
+      "properties": {
+        "quizId": {
+          "type": "string",
+          "example": "63e9a3b9c9d3c2b1a1a1a1a1"
+        },
+        "questionText": {
+          "type": "string",
+          "example": "What is the capital of France?"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
           },
-          "403": {
-            "description": "Forbidden"
-          }
+          "example": ["Paris", "Berlin", "Madrid", "Rome"]
+        },
+        "correctAnswer": {
+          "type": "string",
+          "example": "Paris"
+        },
+        "questionType": {
+          "type": "string",
+          "enum": ["MCQ", "TRUE_FALSE"],
+          "example": "MCQ"
         }
       }
     },
-    "/user/{userId}": {
-      "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
+    "UpdateQuestion": {
+      "type": "object",
+      "properties": {
+        "questionText": {
+          "type": "string",
+          "example": "What is the capital of Germany?"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": ["Paris", "Berlin", "Madrid", "Rome"]
+        },
+        "correctAnswer": {
+          "type": "string",
+          "example": "Berlin"
+        },
+        "questionType": {
+          "type": "string",
+          "enum": ["MCQ", "TRUE_FALSE"],
+          "example": "MCQ"
         }
       }
     },
-    "/leaderboard/{quizId}": {
-      "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+
+
+   "QuizAttempt": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the user taking the quiz."
+        },
+        "quizId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the quiz being attempted."
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "questionId": {
+                "type": "string",
+                "format": "objectId",
+                "description": "ID of the question."
+              },
+              "selectedOption": {
+                "type": "string",
+                "description": "The option selected by the user."
+              }
+            }
           }
+        },
+        "score": {
+          "type": "integer",
+          "description": "The score achieved in the quiz."
+        },
+        "totalQuestions": {
+          "type": "integer",
+          "description": "Total number of questions in the quiz."
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Start time of the quiz attempt."
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Duration of the quiz in minutes."
         }
       }
     },
-    "/{id}/read": {
-      "put": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+    "QuizAttemptCreation": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the user taking the quiz."
+        },
+        "quizId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the quiz being attempted."
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "questionId": {
+                "type": "string",
+                "format": "objectId",
+                "description": "ID of the question."
+              },
+              "selectedOption": {
+                "type": "string",
+                "description": "The option selected by the user."
+              }
+            }
           }
+        },
+        "totalQuestions": {
+          "type": "integer",
+          "description": "Total number of questions in the quiz."
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Start time of the quiz attempt."
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Duration of the quiz in minutes."
         }
       }
     },
-    "/users": {
-      "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+    "QuizAttemptSubmission": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the user submitting the quiz."
+        },
+        "quizId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the quiz being submitted."
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "questionId": {
+                "type": "string",
+                "format": "objectId",
+                "description": "ID of the question."
+              },
+              "selectedOption": {
+                "type": "string",
+                "description": "The option selected by the user."
+              }
+            }
           }
+        },
+        "score": {
+          "type": "integer",
+          "description": "The score achieved in the quiz."
         }
       }
     },
-    "/quizzes": {
-      "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
+
+    "Result": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the user."
+        },
+        "quizId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the quiz."
+        },
+        "score": {
+          "type": "integer",
+          "description": "Score achieved in the quiz."
+        },
+        "totalQuestions": {
+          "type": "integer",
+          "description": "Total questions in the quiz."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date of attempt."
         }
       }
     },
-    "/questions": {
-      "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
+    "ResultCreation": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the user."
+        },
+        "quizId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the quiz."
+        },
+        "score": {
+          "type": "integer",
+          "description": "Score achieved in the quiz."
+        },
+        "totalQuestions": {
+          "type": "integer",
+          "description": "Total questions in the quiz."
         }
       }
     },
-    "/quiz-attempts": {
-      "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
+    "LeaderboardEntry": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the user."
+        },
+        "score": {
+          "type": "integer",
+          "description": "Score achieved in the quiz."
         }
       }
     },
-    "/results": {
-      "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+    "Notification": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the user receiving the notification."
+        },
+        "message": {
+          "type": "string",
+          "description": "Notification message."
+        },
+        "isRead": {
+          "type": "boolean",
+          "description": "Whether the notification has been read."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date of notification creation."
+        }
+      }
+    },
+    "NotificationCreation": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "objectId",
+          "description": "ID of the user receiving the notification."
+        },
+        "message": {
+          "type": "string",
+          "description": "Notification message."
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "format": "objectId",
+          "description": "User ID."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email of the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date when the user was created."
+        }
+      }
+    },
+    "Quiz": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "format": "objectId",
+          "description": "Quiz ID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the quiz."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the quiz."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date when the quiz was created."
+        }
+      }
+    },
+    "Question": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "format": "objectId",
+          "description": "Question ID."
+        },
+        "text": {
+          "type": "string",
+          "description": "Text of the question."
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Possible answers to the question."
           }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date when the question was created."
+        }
+      }
+    },
+
+    "Error": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Error message."
         }
       }
     }
