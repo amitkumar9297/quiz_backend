@@ -15,6 +15,10 @@ export class QuizAttemptService {
     private questionRepository: Repository<Question>;
     private resultRepository: Repository<Result>; // Assuming Result repository is also needed
 
+    /**
+     * Initializes the QuizAttemptService by setting up the necessary repositories.
+     * @constructor
+     */
     constructor() {
         this.quizAttemptRepository = AppDataSource.getRepository(QuizAttempt);
         this.quizRepository = AppDataSource.getRepository(Quiz);
@@ -24,6 +28,16 @@ export class QuizAttemptService {
     }
 
     // Create a new quiz attempt for a user
+     /**
+     * Creates a new quiz attempt for a user.
+     * @param userId The unique identifier of the user who is taking the quiz.
+     * @param quizId The unique identifier of the quiz.
+     * @returns A Promise that resolves to an array of questions of the quiz.
+     * It also creates a new QuizAttempt entity and assigns the user and quiz,
+     * sets the totalQuestions and startTime, and sets the duration to the duration
+     * of the quiz.
+     * If the quiz or user is not found, it throws an error.
+     */
     async createQuizAttempt(userId: number, quizId: string): Promise<any[]> {
         const quiz = await this.quizRepository.findOne({
             where: { id: quizId },
@@ -52,7 +66,14 @@ export class QuizAttemptService {
         return quiz.questions; // Return questions of the quiz
     }
 
-    // Submit a quiz attempt and calculate the score
+    /**
+     * Submits a quiz attempt and calculates the score.
+     * @param userId The unique identifier of the user who took the quiz.
+     * @param quizId The unique identifier of the quiz.
+     * @param answers An array of answers, each containing the question ID and the selected option.
+     * @returns A Promise that resolves to an object containing the updated quiz attempt and the result.
+     * If the quiz attempt is late, it returns an object with a message.
+     */
     async submitQuizAttempt(userId: number, quizId: string, answers: any[]): Promise<{ quizAttempt: QuizAttempt, result: Result } | { message: string }> {
         // Find the quiz attempt by user ID and quiz ID
         const quizAttempt = await this.quizAttemptRepository.findOne({

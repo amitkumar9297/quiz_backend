@@ -6,6 +6,17 @@ import { CreateQuizDTO, UpdateQuizDTO } from "./quiz.dto";
 const quizService = new QuizService();
 
 export class QuizController {
+/**
+ * Handles the creation of a new quiz.
+ * 
+ * @param req - The HTTP request object, containing the quiz 
+ * data in its body.
+ * @param res - The HTTP response object, used to send the 
+ * response back to the client.
+ * 
+ * @returns A promise that resolves when the response is sent.
+ */
+
     async createQuiz(req: Request, res: Response): Promise<void> {
         try {
             // Extract input data from the request body
@@ -22,6 +33,16 @@ export class QuizController {
     }
     
 
+/**
+ * Retrieves a list of all quizzes.
+ * 
+ * @param req - The HTTP request object.
+ * @param res - The HTTP response object used to send the response.
+ * 
+ * @returns A promise that resolves when the response is sent.
+ * @throws {Error} If there is an error while fetching quizzes.
+ */
+
     async getQuizzes(req: Request, res: Response): Promise<void> {
         try {
             const quizzes = await quizService.getQuizzes();
@@ -31,6 +52,15 @@ export class QuizController {
         }
     }
 
+    /**
+     * Retrieves a quiz by its ID.
+     * 
+     * @param req - The HTTP request object containing the quiz ID in the parameters.
+     * @param res - The HTTP response object used to send the response.
+     * 
+     * @returns A promise that resolves when the response is sent.
+     * @throws {Error} If there is an error while fetching the quiz.
+     */
     async getQuizById(req: Request, res: Response): Promise<void> {
         try {
             const quiz = await quizService.getQuizById(req.params.id);
@@ -44,6 +74,15 @@ export class QuizController {
         }
     }
 
+    /**
+     * Updates a quiz by its ID.
+     * 
+     * @param req - The HTTP request object containing the quiz ID in the parameters and the updated quiz data in the body.
+     * @param res - The HTTP response object used to send the response.
+     * 
+     * @returns A promise that resolves when the response is sent.
+     * @throws {Error} If there is an error while updating the quiz.
+     */
     async updateQuiz(req: Request, res: Response): Promise<void> {
         try {
             const data: UpdateQuizDTO = req.body;
@@ -58,6 +97,15 @@ export class QuizController {
         }
     }
 
+    /**
+     * Deletes a quiz by its ID.
+     * 
+     * @param req - The HTTP request object containing the quiz ID in the parameters.
+     * @param res - The HTTP response object used to send the response.
+     * 
+     * @returns A promise that resolves when the response is sent.
+     * @throws {Error} If there is an error while deleting the quiz.
+     */
     async deleteQuiz(req: Request, res: Response): Promise<void> {
         try {
             const quiz = await quizService.deleteQuiz(req.params.id);

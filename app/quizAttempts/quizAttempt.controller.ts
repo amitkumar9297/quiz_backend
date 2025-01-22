@@ -12,6 +12,13 @@ export class QuizAttemptController {
         this.quizAttemptService = new QuizAttemptService();
     }
 
+    /**
+     * Creates a new quiz attempt.
+     * @param req The HTTP request object.
+     * @param res The HTTP response object.
+     * @returns A Promise that resolves when the response is sent.
+     * @throws Error if there is an error while creating a new quiz attempt.
+     */
     async createQuizAttempt(req: Request, res: Response): Promise<void> {
         const { userId, quizId, answers }: CreateQuizAttemptDTO = req.body;
 
@@ -23,6 +30,13 @@ export class QuizAttemptController {
         }
     }
 
+    /**
+     * Submits a quiz attempt.
+     * @param req The HTTP request object containing the user ID, quiz ID, and the user's answers in the body.
+     * @param res The HTTP response object used to send the response.
+     * @returns A Promise that resolves when the response is sent.
+     * @throws Error if there is an error while submitting the quiz attempt.
+     */
     async submitQuizAttempt(req: Request, res: Response): Promise<void> {
         const userId: number = req.body.userId; // Expecting a number
 const quizId: string = req.body.quizId; // Expecting a string

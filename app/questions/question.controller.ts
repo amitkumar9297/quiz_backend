@@ -4,6 +4,15 @@ import { QuestionService } from "./question.service";
 const questionService = new QuestionService();
 
 export class QuestionController {
+    /**
+     * Handles the creation,updation, deletion,getquebyid,getallquestions of a new question.
+     * 
+     * @param req - The HTTP request object containing the question details in the body.
+     * @param res - The HTTP response object used to send the response.
+     * @returns A Promise that resolves when the response is sent.
+     * @throws An error if there is an issue during question creation.
+     */
+
     async createQuestion(req: Request, res: Response): Promise<void> {
         try {
             const question = await questionService.createQuestion(req.body);
