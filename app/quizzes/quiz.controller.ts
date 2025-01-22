@@ -1,54 +1,36 @@
+// quiz.controller.ts
 import { Request, Response } from "express";
 import { QuizService } from "./quiz.service";
+import { CreateQuizDTO, UpdateQuizDTO } from "./quiz.dto";
 
 const quizService = new QuizService();
 
-
-/**
- * QuizController class for handling HTTP requests related to quizzes.
- */
 export class QuizController {
-/**
-     * Creates a new quiz.
-     * 
-     * @param {Request} req - The Express request object containing quiz data in the body.
-     * @param {Response} res - The Express response object used to send the response.
-     * @returns {Promise<void>} A promise that resolves when the response is sent.
-     */
     async createQuiz(req: Request, res: Response): Promise<void> {
         try {
-            const quiz = await quizService.createQuiz(req.body);
+            // Extract input data from the request body
+            const data: CreateQuizDTO = req.body;
+    
+            // Call the service to create the quiz
+            const quiz = await quizService.createQuiz(data);
+    
+            // Respond with the created quiz
             res.status(201).json(quiz);
         } catch (error) {
-            res.status(400).json({ error: error });
+            res.status(400).json({ error: error.message });
         }
     }
-
     
-    /**
-     * Retrieves all quizzes.
-     * 
-     * @param {Request} req - The Express request object.
-     * @param {Response} res - The Express response object used to send the response.
-     * @returns {Promise<void>} A promise that resolves when the response is sent.
-     */
 
     async getQuizzes(req: Request, res: Response): Promise<void> {
         try {
             const quizzes = await quizService.getQuizzes();
             res.status(200).json(quizzes);
         } catch (error) {
-            res.status(500).json({ error: error });
+            res.status(500).json({ error: error.message });
         }
     }
 
-     /**
-     * Retrieves a quiz by its ID.
-     * 
-     * @param {Request} req - The Express request object containing the quiz ID in the parameters.
-     * @param {Response} res - The Express response object used to send the response.
-     * @returns {Promise<void>} A promise that resolves when the response is sent.
-     */
     async getQuizById(req: Request, res: Response): Promise<void> {
         try {
             const quiz = await quizService.getQuizById(req.params.id);
@@ -58,37 +40,24 @@ export class QuizController {
             }
             res.status(200).json(quiz);
         } catch (error) {
-            res.status(500).json({ error: error });
+            res.status(500).json({ error: error.message });
         }
     }
 
-/**
-     * Updates a quiz by its ID.
-     * 
-     * @param {Request} req - The Express request object containing the quiz ID in the parameters and updated quiz data in the body.
-     * @param {Response} res - The Express response object used to send the response.
-     * @returns {Promise<void>} A promise that resolves when the response is sent.
-     */
     async updateQuiz(req: Request, res: Response): Promise<void> {
         try {
-            const quiz = await quizService.updateQuiz(req.params.id, req.body);
+            const data: UpdateQuizDTO = req.body;
+            const quiz = await quizService.updateQuiz(req.params.id, data);
             if (!quiz) {
                 res.status(404).json({ message: "Quiz not found" });
                 return;
             }
             res.status(200).json(quiz);
         } catch (error) {
-            res.status(400).json({ error: error });
+            res.status(400).json({ error: error.message });
         }
     }
 
-   /**
-     * Deletes a quiz by its ID.
-     * 
-     * @param {Request} req - The Express request object containing the quiz ID in the parameters.
-     * @param {Response} res - The Express response object used to send the response.
-     * @returns {Promise<void>} A promise that resolves when the response is sent.
-     */
     async deleteQuiz(req: Request, res: Response): Promise<void> {
         try {
             const quiz = await quizService.deleteQuiz(req.params.id);
@@ -98,7 +67,7 @@ export class QuizController {
             }
             res.status(200).json({ message: "Quiz deleted successfully" });
         } catch (error) {
-            res.status(500).json({ error: error });
+            res.status(500).json({ error: error.message });
         }
     }
 }

@@ -8,7 +8,7 @@ import notificationRoutes from "./notifications/notification.routes";
 import adminRoutes from "./admin/admin.routes";
 
 import swaggerUi from "swagger-ui-express";
-import swaggerJsonFile from "../swagger/swagger.json"
+import swaggerJsonFile from "../swagger/swagger.json";
 import { isAdminMiddleware } from "./common/middleware/isAdmin.middleware";
 
 
@@ -16,12 +16,12 @@ import { isAdminMiddleware } from "./common/middleware/isAdmin.middleware";
 const router = express.Router();
 
 router.use("/users" ,userRoutes);
-router.use("/quizzes", quizRoutes);
-router.use("/questions", questionRoutes);
-router.use("/quiz-attempts", quizAttemptRoutes);
-router.use("/results", resultRoutes);
-router.use("/notifications", notificationRoutes);
-router.use("/admin", isAdminMiddleware,adminRoutes);
+// router.use("/quizzes", quizRoutes);
+// router.use("/questions", questionRoutes);
+// router.use("/quiz-attempts", quizAttemptRoutes);
+// router.use("/results", resultRoutes);
+// router.use("/notifications", notificationRoutes);
+// router.use("/admin", isAdminMiddleware,adminRoutes);
 
 router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerJsonFile));
 

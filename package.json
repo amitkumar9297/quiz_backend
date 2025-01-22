@@ -12,7 +12,8 @@
     "lint:fix": "eslint --fix --ext .js,.ts .",
     "format": "prettier . -w",
     "format:check": "prettier . --check",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
@@ -31,6 +32,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/mongoose": "^5.11.97",
     "@types/morgan": "^1.9.4",
+    "@types/node": "^22.10.7",
     "@types/nodemailer": "^6.4.8",
     "@types/passport": "^1.0.12",
     "@types/passport-jwt": "^3.0.9",
@@ -47,12 +49,14 @@
     "husky": "^8.0.0",
     "lint-staged": "^13.2.3",
     "prettier": "^3.0.0",
-    "ts-node": "^10.9.1",
-    "typescript": "*"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "dotenv": "^16.3.1",
     "express": "^4.21.2",
     "express-async-handler": "^1.2.0",
@@ -66,9 +70,12 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "pg": "^8.13.1",
     "pnpm": "^9.15.4",
+    "reflect-metadata": "^0.2.2",
     "swagger-autogen": "^2.23.7",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "typeorm": "^0.3.20"
   }
 }

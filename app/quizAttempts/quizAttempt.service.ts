@@ -1,116 +1,124 @@
-import { QuizAttempt } from './quizAttempt.model';
-import { Quiz } from '../quizzes/quiz.model';
-import { Question } from '../questions/question.model';
-import { Result } from '../results/result.model';
-import { User } from '../user/user.model';
-import { sendEmail } from '../common/services/email.service';
+import { Repository } from "typeorm";
+import AppDataSource from "../common/services/data-source"; // Your TypeORM data source
+import { QuizAttempt } from "./quizAttempt.entity";
+import { Quiz } from "../quizzes/quiz.entity";
+import { Question } from "../questions/question.entity";
+import { Result } from "../results/result.entity"; // Assuming Result entity is defined in result.entity.ts
+import { User } from "../user/user.entity";
+import { sendEmail } from "../common/services/email.service";
+import { CreateQuizAttemptDTO } from "./quizAttempt.dto";
 
-
-/**
- * QuizAttemptService class for managing quiz attempts.
- */
 export class QuizAttemptService {
+    private quizAttemptRepository: Repository<QuizAttempt>;
+    private quizRepository: Repository<Quiz>;
+    private userRepository: Repository<User>;
+    private questionRepository: Repository<Question>;
+    private resultRepository: Repository<Result>; // Assuming Result repository is also needed
 
-    /**
-     * Creates a new quiz attempt.
-     * 
-     * @param {string} userId - The ID of the user attempting the quiz.
-     * @param {string} quizId - The ID of the quiz being attempted.
-     * @param {any[]} answers - An array of answers provided by the user (not used in this method).
-     * @returns {Promise<any[]>} A promise that resolves to the questions of the quiz.
-     * @throws {Error} If the quiz is not found.
-     */
+    constructor() {
+        this.quizAttemptRepository = AppDataSource.getRepository(QuizAttempt);
+        this.quizRepository = AppDataSource.getRepository(Quiz);
+        this.userRepository = AppDataSource.getRepository(User);
+        this.questionRepository = AppDataSource.getRepository(Question);
+        this.resultRepository = AppDataSource.getRepository(Result); // Initialize Result repository
+    }
 
-    async createQuizAttempt(userId: string, quizId: string, answers: any[]) {
-        const quiz = await Quiz.findById(quizId).populate('questions');;
+    // Create a new quiz attempt for a user
+    async createQuizAttempt(userId: number, quizId: string): Promise<any[]> {
+        const quiz = await this.quizRepository.findOne({
+            where: { id: quizId },
+            relations: ["questions"] // Ensure questions are loaded
+        });
+        
         if (!quiz) {
             throw new Error('Quiz not found');
         }
 
-        const quizAttempt = new QuizAttempt({
-            userId,
-            quizId,
-            // answers,
+        const user = await this.userRepository.findOneBy({ id: userId });
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Create a new QuizAttempt
+        const quizAttempt = this.quizAttemptRepository.create({
+            user, // Assigning complete User entity
+            quiz, // Assigning complete Quiz entity
             totalQuestions: quiz.questions.length,
             startTime: new Date(),
             duration: quiz.duration // Assuming duration is in minutes
         });
 
-        await quizAttempt.save();
-        // return quizAttempt;
-        return quiz.questions;
+        await this.quizAttemptRepository.save(quizAttempt);
+        return quiz.questions; // Return questions of the quiz
     }
 
-
-    /**
-     * Submits an existing quiz attempt.
-     * 
-     * @param {string} userId - The ID of the user submitting the quiz.
-     * @param {string} quizId - The ID of the quiz being submitted.
-     * @param {any[]} answers - An array of answers provided by the user.
-     * @returns {Promise<{ quizAttempt: QuizAttempt, result: Result } | { message: string }>} A promise that resolves to an object containing the quiz attempt and result, or a message if submission is late.
-     * @throws {Error} If the quiz attempt is not found or if the user is not found.
-     */
-
-    async submitQuizAttempt(userId: string, quizId: string, answers: any[]) {
-        const quizAttempt = await QuizAttempt.findOne({ userId, quizId });
+    // Submit a quiz attempt and calculate the score
+    async submitQuizAttempt(userId: number, quizId: string, answers: any[]): Promise<{ quizAttempt: QuizAttempt, result: Result } | { message: string }> {
+        // Find the quiz attempt by user ID and quiz ID
+        const quizAttempt = await this.quizAttemptRepository.findOne({
+            where: { 
+                user: { id: userId },  // userId is a number
+                quiz: { id: quizId }    // quizId is a string
+            },
+            relations: ["quiz"] // Load quiz to access its properties if needed
+        });
+    
         if (!quizAttempt) {
             throw new Error('Quiz attempt not found');
         }
-
+    
         const elapsedTime = (new Date().getTime() - new Date(quizAttempt.startTime).getTime()) / (1000 * 60); // Convert to minutes
-
+    
         if (elapsedTime > quizAttempt.duration) {
-            // throw new Error('You are late. Submission time has expired.');
-            return {"message":"you are late"}
+            return { message: "You are late" };
         }
-
+    
         let score = 0;
         for (const answer of answers) {
-            const question = await Question.findById(answer.questionId);
+            const question = await this.questionRepository.findOneBy({ id: answer.questionId });
             if (question && question.correctAnswer === answer.selectedOption) {
                 score++;
             }
         }
-
+    
         quizAttempt.answers = answers; // Update answers
         quizAttempt.score = score; // Set calculated score
-        await quizAttempt.save();
-
-        const result = new Result({
-            userId,
-            quizId,
+        await this.quizAttemptRepository.save(quizAttempt);
+    
+        // Create new Result instance
+        const result = this.resultRepository.create({
+            userId, // This should be a number
+            quizId, // This should be a string
             score,
             totalQuestions: quizAttempt.totalQuestions,
         });
 
-        const user = await User.findById(userId);
+        // Fetch user and quiz entities for email notification
+        const user = await this.userRepository.findOneBy({ id: userId }); // userId is number
         if (!user) {
             throw new Error('User not found');
         }
     
-        const userEmail = user.email; 
-
-        const quiz = await Quiz.findById(quizId);
-    if (!quiz) {
-        throw new Error('Quiz not found');
-    }
-
-    const quizTitle = quiz.title;
+        const userEmail = user.email;
+        const quiz = await this.quizRepository.findOne({ where: { id: quizId } }); // quizId is string
+        if (!quiz) {
+            throw new Error('Quiz not found');
+        }
     
+        const quizTitle = quiz.title;
+
         // Email options
         const mailOptions = {
             to: userEmail,
-            subject: `Quiz Result for Quiz ID: ${quizTitle}`,
+            subject: `Quiz Result for Quiz: ${quizTitle}`,
             text: `Hello,\n\nThank you for participating in the quiz!\n\nYour score: ${score} out of ${quizAttempt.totalQuestions}\n\nBest regards,\nQuiz Team`,
         };
     
-        // Send email (assuming sendEmail is your email sending function)
+        // Send email
         await sendEmail(mailOptions);
-        
-        await result.save(); // Save the result
     
-        return { quizAttempt, result };
-        
+        await this.resultRepository.save(result); // Save the result
+    
+        return { quizAttempt, result }; // Return quiz attempt and result
     }
 }

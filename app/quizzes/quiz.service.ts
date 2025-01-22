@@ -1,62 +1,50 @@
-import { Quiz, IQuiz } from "./quiz.model";
+import { Quiz } from "./quiz.entity"; // Make sure the import is correct
 import { CreateQuizDTO, UpdateQuizDTO } from "./quiz.dto";
+import { Repository } from "typeorm";
+import { User } from "../user/user.entity";
+import AppDataSource from "../common/services/data-source"; // Adjust this import based on your project structure
 
-
-/**
- * QuizService class for handling operations related to quizzes.
- */
 export class QuizService {
+    private quizRepository: Repository<Quiz>;
 
-     /**
-     * Creates a new quiz.
-     * 
-     * @param {CreateQuizDTO} data - The data required to create a new quiz.
-     * @returns {Promise<IQuiz>} A promise that resolves to the created quiz.
-     */
-    async createQuiz(data: CreateQuizDTO): Promise<IQuiz> {
-        const quiz = new Quiz(data);
-        return quiz.save();
+    constructor() {
+        this.quizRepository = AppDataSource.getRepository(Quiz);
     }
 
-       /**
-     * Retrieves all quizzes.
-     * 
-     * @returns {Promise<IQuiz[]>} A promise that resolves to an array of quizzes.
-     */
-    async getQuizzes(): Promise<IQuiz[]> {
-        return Quiz.find().populate("questions createdBy", "-password");
+    async createQuiz(data: CreateQuizDTO): Promise<Quiz> {
+        // Fetch the User entity using the createdBy ID
+        const user = await this.quizRepository.manager.findOne(User, { where: { id: data.createdBy } });
+        if (!user) {
+            throw new Error("User not found");
+        }
+    
+        const quiz = this.quizRepository.create({
+            title: data.title,
+            description: data.description,
+            duration: data.duration,
+            createdBy: user, // Assign the User entity
+        });
+    
+        return this.quizRepository.save(quiz); // Save the quiz
     }
 
-        /**
-     * Retrieves a quiz by its ID.
-     * 
-     * @param {string} id - The ID of the quiz to retrieve.
-     * @returns {Promise<IQuiz | null>} A promise that resolves to the quiz if found, or null if not found.
-     */
-    async getQuizById(id: string): Promise<IQuiz | null> {
-        return Quiz.findById(id).populate("questions createdBy", "-password");
+    async getQuizzes(): Promise<Quiz[]> {
+        return this.quizRepository.find({ relations: ["createdBy", "questions"] }); // Load relations
     }
 
-
-        /**
-     * Updates a quiz by its ID.
-     * 
-     * @param {string} id - The ID of the quiz to update.
-     * @param {UpdateQuizDTO} data - The data to update the quiz with.
-     * @returns {Promise<IQuiz | null>} A promise that resolves to the updated quiz if found, or null if not found.
-     */
-
-    async updateQuiz(id: string, data: UpdateQuizDTO): Promise<IQuiz | null> {
-        return Quiz.findByIdAndUpdate(id, data, { new: true });
+    async getQuizById(id: string): Promise<Quiz | null> {
+        return this.quizRepository.findOne({ where: { id }, relations: ["createdBy", "questions"] });
     }
 
-     /**
-     * Deletes a quiz by its ID.
-     * 
-     * @param {string} id - The ID of the quiz to delete.
-     * @returns {Promise<IQuiz | null>} A promise that resolves to the deleted quiz if found, or null if not found.
-     */
-    async deleteQuiz(id: string): Promise<IQuiz | null> {
-        return Quiz.findByIdAndDelete(id);
+    async updateQuiz(id: string, data: UpdateQuizDTO): Promise<Quiz | null> {
+        await this.quizRepository.update(id, data); // Update the quiz
+        return this.getQuizById(id); // Retrieve the updated quiz
+    }
+
+    async deleteQuiz(id: string): Promise<Quiz | null> {
+        const quiz = await this.getQuizById(id); // Check if the quiz exists
+        if (!quiz) return null; // Return null if not found
+        await this.quizRepository.delete(id); // Delete the quiz
+        return quiz; // Return the deleted quiz
     }
 }

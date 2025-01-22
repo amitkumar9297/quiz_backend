@@ -1,71 +1,66 @@
-import { Question, IQuestion } from "./question.model";
+import { Repository } from "typeorm";
+import AppDataSource from "../common/services/data-source"; // Your TypeORM data source
+import { Question } from "./question.entity";
+import { Quiz } from "../quizzes/quiz.entity";
 import { CreateQuestionDTO, UpdateQuestionDTO } from "./question.dto";
 
-
-/**
- * QuestionService class for handling question-related business logic.
- */
-
 export class QuestionService {
-   
-     /**
-     * Creates a new question.
-     * 
-     * @param {CreateQuestionDTO} data - The data required to create a new question.
-     * @returns {Promise<IQuestion>} A promise that resolves to the created question.
-     * @throws {Error} If the question data is invalid or cannot be saved.
-     */
-    async createQuestion(data: CreateQuestionDTO): Promise<IQuestion> {
-        const question = new Question(data);
-        return question.save();
+    private questionRepository: Repository<Question>;
+    private quizRepository: Repository<Quiz>;
+
+    constructor() {
+        this.questionRepository = AppDataSource.getRepository(Question);
+        this.quizRepository = AppDataSource.getRepository(Quiz);
     }
 
+    async createQuestion(data: CreateQuestionDTO): Promise<Question> {
+        const quiz = await this.quizRepository.findOneBy({ id: data.quizId });
 
-    /**
-     * Retrieves all questions associated with a specific quiz ID.
-     * 
-     * @param {string} quizId - The ID of the quiz for which to retrieve questions.
-     * @returns {Promise<IQuestion[]>} A promise that resolves to an array of questions.
-     * @throws {Error} If an error occurs while fetching questions.
-     */
+        if (!quiz) {
+            throw new Error("Quiz not found");
+        }
 
-    
-    async getQuestionsByQuizId(quizId: string): Promise<IQuestion[]> {
-        return Question.find({ quizId });
+        const question = this.questionRepository.create({
+            ...data,
+            quiz,
+        });
+
+        return this.questionRepository.save(question);
     }
 
-    /**
-     * Retrieves a specific question by its ID.
-     * 
-     * @param {string} id - The ID of the question to retrieve.
-     * @returns {Promise<IQuestion | null>} A promise that resolves to the found question or null if not found.
-     * @throws {Error} If an error occurs while fetching the question.
-     */
-    async getQuestionById(id: string): Promise<IQuestion | null> {
-        return Question.findById(id);
+    async getQuestionsByQuizId(quizId: string): Promise<Question[]> {
+        return this.questionRepository.find({
+            where: { quiz: { id: quizId } },
+            relations: ["quiz"],
+        });
     }
 
-    /**
-     * Updates a specific question by its ID.
-     * 
-     * @param {string} id - The ID of the question to update.
-     * @param {UpdateQuestionDTO} data - The updated data for the question.
-     * @returns {Promise<IQuestion | null>} A promise that resolves to the updated question or null if not found.
-     * @throws {Error} If the question is not found or the update fails.
-     */
-    async updateQuestion(id: string, data: UpdateQuestionDTO): Promise<IQuestion | null> {
-        return Question.findByIdAndUpdate(id, data, { new: true });
+    async getQuestionById(id: string): Promise<Question | null> {
+        return this.questionRepository.findOne({
+            where: { id },
+            relations: ["quiz"],
+        });
     }
 
-    /**
-     * Deletes a specific question by its ID.
-     * 
-     * @param {string} id - The ID of the question to delete.
-     * @returns {Promise<IQuestion | null>} A promise that resolves to the deleted question or null if not found.
-     * @throws {Error} If the question is not found or the delete operation fails.
-     */
+    async updateQuestion(id: string, data: UpdateQuestionDTO): Promise<Question | null> {
+        const question = await this.getQuestionById(id);
 
-    async deleteQuestion(id: string): Promise<IQuestion | null> {
-        return Question.findByIdAndDelete(id);
+        if (!question) {
+            return null;
+        }
+
+        Object.assign(question, data);
+        return this.questionRepository.save(question);
+    }
+
+    async deleteQuestion(id: string): Promise<Question | null> {
+        const question = await this.getQuestionById(id);
+
+        if (!question) {
+            return null;
+        }
+
+        await this.questionRepository.remove(question);
+        return question;
     }
 }
