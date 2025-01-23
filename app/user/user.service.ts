@@ -33,7 +33,7 @@ export class UserService {
      * @returns {Promise<{ accessToken: string; refreshToken: string }>} - An object containing the generated access token and refresh token.
      * @throws {Error} If the email or password is invalid.
      */
-    async loginUser(email: string, password: string): Promise<{ accessToken: string; refreshToken: string }> {
+    async loginUser(email: string, password: string): Promise<{ accessToken: string; refreshToken: string; userId: string }> {
         const user = await User.findOne({ email });
         if (!user) {
             throw new Error("Invalid email or password");
@@ -54,7 +54,7 @@ export class UserService {
         const accessToken = generateAccessToken(payload);
         const refreshToken = generateRefreshToken(payload);
 
-        return { accessToken, refreshToken };
+        return { accessToken, refreshToken, userId: user._id.toString() };
     }
 
 

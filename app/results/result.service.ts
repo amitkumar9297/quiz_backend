@@ -65,7 +65,24 @@ export class ResultService {
      * @param {string} quizId - The ID of the quiz for which the leaderboard is requested.
      * @returns {Promise<IResult[]>} A promise that resolves to an array of the top results for the quiz.
      */
-    async getLeaderboard(quizId: string): Promise<IResult[]> {
-        return Result.find({ quizId }).sort({ score: -1 }).limit(10).populate("userId");
+    async getLeaderboard(quizId: string): Promise<any[]> {
+        // Fetch results for the given quizId and populate user details
+        const results = await Result.find({ quizId })
+            .sort({ score: -1 })
+            .populate("userId");
+    
+        // Create a Map to store the highest score for each user
+        const userMap = new Map<string, any>();
+    
+        for (const result of results) {
+            const userId = (result.userId as any)._id.toString(); // Use 'as any' to bypass TypeScript error
+            if (!userMap.has(userId) || userMap.get(userId).score < result.score) {
+                userMap.set(userId, result); // Keep only the highest score for each user
+            }
+        }
+    
+        // Convert the Map values to an array and return the top 10 results
+        return Array.from(userMap.values()).slice(0, 10);
     }
+    
 }

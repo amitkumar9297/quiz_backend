@@ -2,6 +2,7 @@ import express, { type Express, type Request, type Response } from "express";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import http from "http";
+import cors from "cors"
 
 import { initDB } from "./app/common/services/database.service";
 import { initPassport } from "./app/common/services/passport-jwt.service";
@@ -18,6 +19,16 @@ const port = Number(process.env.PORT) ?? 5000;
 
 const app: Express = express();
 
+
+app.use(cors());
+
+// app.options('*', (req, res) => {
+//   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//   res.setHeader('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+//   res.sendStatus(204); // No content
+// });
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
