@@ -45,6 +45,40 @@ export class UserController {
         }
     }
 
+    /**
+     * Handles the forgot password feature.
+     * 
+     * @param {Request} req - The Express request object containing the email to send the password reset link to.
+     * @param {Response} res - The Express response object used to send the response.
+     * @returns {Promise<void>} A promise that resolves when the response is sent.
+     */
+    async forgotPassword(req: Request, res: Response): Promise<void> {
+        try {
+            const { email } = req.body;
+            await userService.forgotPassword(email);
+            res.status(200).json({ message: "Password reset email sent" });
+        } catch (error) {
+            res.status(400).json({ error: error});
+        }
+    }
+
+    /**
+     * Resets the password for a user using the provided token.
+     * 
+     * @param {Request} req - The Express request object containing the token, email, and new password in the body.
+     * @param {Response} res - The Express response object used to send the response.
+     * @returns {Promise<void>} A promise that resolves when the response is sent.
+     */
+    async resetPassword(req: Request, res: Response): Promise<void> {
+        try {
+            const { token, email, newPassword } = req.body;
+            await userService.resetPassword(token, email, newPassword);
+            res.status(200).json({ message: "Password updated successfully" });
+        } catch (error) {
+            res.status(400).json({ error: error });
+        }
+    }
+
 
     /**
      * Refreshes the access token using the refresh token provided by the user.

@@ -15,5 +15,7 @@ router.put("/:id", userValidator.updateUser ,isUserMiddleware, userController.up
 router.delete("/:id", isUserMiddleware, userController.deleteUser.bind(userController)); 
 
 router.post("/refresh-token", userController.refreshAccessToken.bind(userController));
+router.post("/forgot-password", userController.forgotPassword.bind(userController));
+router.post("/reset-password", userController.resetPassword.bind(userController));
 
 export default router;

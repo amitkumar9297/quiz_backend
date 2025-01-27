@@ -50,10 +50,10 @@ export class QuizAttemptController {
      */
 
     async submitQuizAttempt(req: Request, res: Response) {
-        const { userId, quizId, answers }: CreateQuizAttemptDTO = req.body;
+        const { userId, quizId, answers, quizAttemptId }: CreateQuizAttemptDTO = req.body;
 
         try {
-            const quizAttempt = await this.quizAttemptService.submitQuizAttempt(userId, quizId, answers);
+            const quizAttempt = await this.quizAttemptService.submitQuizAttempt(userId, quizId,quizAttemptId, answers);
             res.status(200).json(quizAttempt);
         } catch (error) {
             res.status(400).json({ message: error });

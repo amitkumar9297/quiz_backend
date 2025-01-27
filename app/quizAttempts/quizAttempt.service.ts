@@ -36,9 +36,10 @@ export class QuizAttemptService {
             duration: quiz.duration // Assuming duration is in minutes
         });
 
-        await quizAttempt.save();
+        const savedQuizAttempt = await quizAttempt.save();
+        console.log("quizCreateAttemp",{ savedQuizAttempt ,questions: quiz.questions })
         // return quizAttempt;
-        return quiz.questions;
+        return { savedQuizAttempt ,questions: quiz.questions } ;
     }
 
 
@@ -52,14 +53,15 @@ export class QuizAttemptService {
      * @throws {Error} If the quiz attempt is not found or if the user is not found.
      */
 
-    async submitQuizAttempt(userId: string, quizId: string, answers: any[]) {
-        const quizAttempt = await QuizAttempt.findOne({ userId, quizId });
+    async submitQuizAttempt(userId: string, quizId: string,quizAttemptId: string, answers: any[]) {
+        const quizAttempt = await QuizAttempt.findById(quizAttemptId);
+        console.log("quizAttempt0",quizAttempt)
         if (!quizAttempt) {
             throw new Error('Quiz attempt not found');
         }
 
         const elapsedTime = (new Date().getTime() - new Date(quizAttempt.startTime).getTime()) / (1000 * 60); // Convert to minutes
-
+        console.log("quizAttempt1",quizAttempt)
         if (elapsedTime > quizAttempt.duration) {
             // throw new Error('You are late. Submission time has expired.');
             return {"message":"you are late"}
@@ -77,9 +79,12 @@ export class QuizAttemptService {
         quizAttempt.score = score; // Set calculated score
         await quizAttempt.save();
 
+        console.log("quizAttempt2",quizAttempt)
+
         const result = new Result({
             userId,
             quizId,
+            quizAttemptId,
             score,
             totalQuestions: quizAttempt.totalQuestions,
         });

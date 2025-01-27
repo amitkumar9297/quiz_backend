@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { ResultController } from "./result.controller";
+import { isUserMiddleware } from "../common/middleware/isUser.middleware";
 
 const router = Router();
 const resultController = new ResultController();

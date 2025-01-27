@@ -1,8 +1,10 @@
 import bcrypt from "bcrypt"; 
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { User, IUser } from "./user.model";
 import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "./user.dto";
 import { generateAccessToken, generateRefreshToken, JwtPayload } from "../common/helper/token.helper";
+import { sendEmail } from "../common/services/email.service";
 
 export class UserService {
     
@@ -54,7 +56,66 @@ export class UserService {
         const accessToken = generateAccessToken(payload);
         const refreshToken = generateRefreshToken(payload);
 
+        await User.findByIdAndUpdate(user._id, {
+            accessToken,    
+            refreshToken,
+        });
+
         return { accessToken, refreshToken, userId: user._id.toString() };
+    }
+
+    async forgotPassword(email: string): Promise<void> {
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new Error("User with this email does not exist");
+        }
+
+        // Generate a reset token and hash it
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const hashedResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+        
+        user.resetPasswordToken = hashedResetToken;
+        user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); 
+        await user.save();
+
+        // Send the reset token via email (replace this with your email service)
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&email=${email}`;
+
+        const mailOptions = {
+            to: email,
+            subject: `Reset your password`,
+            text: `Send this reset link to the user: ${resetLink}`,
+        };
+        await sendEmail(mailOptions);
+    }
+
+
+    // Add a method to reset the password using the token
+    async resetPassword(token: string, email: string, newPassword: string): Promise<void> {
+        // Hash the token to find it in the database
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+        // Find the user by email and reset token
+        const user = await User.findOne({
+            email,
+            resetPasswordToken: hashedToken,
+            resetPasswordExpires: { $gt: Date.now() }, // Ensure token has not expired
+        });
+
+        if (!user) {
+            throw new Error("Invalid or expired token");
+        }
+
+        // Update the user's password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+
+        // Clear the reset token and expiration
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+
+        await user.save();
     }
 
 
@@ -67,20 +128,34 @@ export class UserService {
      * @returns {Promise<string>} The new access token.
      * @throws {Error} If the refresh token is invalid or expired.
      */
-    async refreshAccessToken(refreshToken: string): Promise<string> {
+    async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
         try {
             // Verify refresh token
             const secret = process.env.REFRESH_TOKEN_SECRET || "refresh_secret"; // Use your secret for refresh tokens
             const payload = jwt.verify(refreshToken, secret) as JwtPayload;
 
+            const user=await User.findOne({_id:payload.userId});
+            if (!user) {
+                throw new Error("No User Found");
+            }
+            if(user.refreshToken === refreshToken) {
+                throw new Error("Invalidtoken");
+            }
+
             // Generate new access token
-            const accessToken = generateAccessToken({
+            const newAccessToken = generateAccessToken({
                 userId: payload.userId,
                 email: payload.email,
                 role: payload.role,
             });
+            const newRefreshToken = generateRefreshToken({
+                userId: payload.userId,
+                email: payload.email,
+                role: payload.role,
+            });
+            await User.findByIdAndUpdate(payload.userId, { refreshToken: newRefreshToken });
 
-            return accessToken;
+            return { accessToken: newAccessToken, refreshToken: newRefreshToken };
         } catch (error) {
             throw new Error("Invalid or expired refresh token");
         }
